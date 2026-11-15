@@ -1,3 +1,4 @@
+from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 NEW_SUMMARY = """
@@ -12,18 +13,32 @@ development practices.
 
 
 def main():
-    print("Starting profile update automation")
+    demo_file = Path("demo/index.html").resolve().as_uri()
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
 
-        # Demo target for testing browser interaction
-        page.goto("https://example.com")
+        # Open our demo webpage
+        page.goto(demo_file)
 
-        print("Browser launched successfully")
-        print("Approved summary prepared:")
-        print(NEW_SUMMARY)
+        # Enter the summary
+        page.locator("#summary").fill(NEW_SUMMARY)
+
+        # Click Save
+        page.locator("#save").click()
+
+        # Verify the result
+        status = page.locator("#status").inner_text()
+        saved_summary = page.evaluate(
+            "() => localStorage.getItem('profileSummary')"
+        )
+
+        assert status == "Summary saved successfully!"
+        assert saved_summary == NEW_SUMMARY
+
+        print("SUCCESS: Summary entered and saved!")
+        print("Verification passed!")
 
         browser.close()
 
