@@ -23,5 +23,5 @@ jobs:
           pip install -r requirements.txt
           playwright install --with-deps chromium
 
-      - name: Run automation
-        run: python automation/main.py
+      - name: Run Naukri diagnostic
+        run: python automation/naukri_profile.py
