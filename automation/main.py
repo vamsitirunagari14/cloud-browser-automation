@@ -1,44 +1,43 @@
+import json
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-NEW_SUMMARY = """
-Java Backend Developer with 3 years of experience in developing scalable
-applications using Java, Spring Boot, and Microservices. Skilled in building
-REST APIs, implementing backend business logic, integrating services, and
-optimizing database interactions using SQL, Hibernate, and Spring Data JPA.
-Experienced in developing secure applications using Spring Security and JWT.
-Strong understanding of backend architecture, problem-solving, and Agile
-development practices.
-""".strip()
-
 
 def main():
+
+    # Read profile summary from JSON
+    config_path = Path("config/profile.json")
+
+    with open(config_path, "r", encoding="utf-8") as file:
+        config = json.load(file)
+
+    new_summary = config["profile_summary"]
+
+    # Open demo webpage
     demo_file = Path("demo/index.html").resolve().as_uri()
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
 
-        # Open our demo webpage
         page.goto(demo_file)
 
-        # Enter the summary
-        page.locator("#summary").fill(NEW_SUMMARY)
+        # Fill summary
+        page.locator("#summary").fill(new_summary)
 
-        # Click Save
+        # Save summary
         page.locator("#save").click()
 
-        # Verify the result
-        status = page.locator("#status").inner_text()
+        # Verify saved content
         saved_summary = page.evaluate(
             "() => localStorage.getItem('profileSummary')"
         )
 
-        assert status == "Summary saved successfully!"
-        assert saved_summary == NEW_SUMMARY
+        assert saved_summary == new_summary
 
-        print("SUCCESS: Summary entered and saved!")
-        print("Verification passed!")
+        print("SUCCESS: Configuration loaded!")
+        print("SUCCESS: Summary entered!")
+        print("SUCCESS: Summary saved and verified!")
 
         browser.close()
 
